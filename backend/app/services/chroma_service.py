@@ -26,10 +26,14 @@ class ChromaService:
                 name=settings.chroma_collection,
                 metadata={"hnsw:space": "cosine"},
             )
-            logger.info("Connected to ChromaDB", host=settings.chroma_host, port=settings.chroma_port)
+            logger.info(
+                "Connected to ChromaDB",
+                host=settings.chroma_host,
+                port=settings.chroma_port,
+            )
         except Exception as e:
             logger.error("Failed to connect to ChromaDB", error=str(e))
-            raise VectorDBError(f"Failed to connect to ChromaDB: {e}")
+            raise VectorDBError(f"Failed to connect to ChromaDB: {e}") from e
 
     async def disconnect(self) -> None:
         self._client = None
@@ -64,7 +68,7 @@ class ChromaService:
             logger.info("Documents added to ChromaDB", count=len(documents))
         except Exception as e:
             logger.error("Failed to add documents to ChromaDB", error=str(e))
-            raise VectorDBError(f"Failed to add documents: {e}")
+            raise VectorDBError(f"Failed to add documents: {e}") from e
 
     async def query(
         self,
@@ -88,7 +92,7 @@ class ChromaService:
             return results
         except Exception as e:
             logger.error("Failed to query ChromaDB", error=str(e))
-            raise VectorDBError(f"Failed to query: {e}")
+            raise VectorDBError(f"Failed to query: {e}") from e
 
     async def delete_documents(self, ids: list[str]) -> None:
         self._ensure_connected()
@@ -97,7 +101,7 @@ class ChromaService:
             logger.info("Documents deleted from ChromaDB", count=len(ids))
         except Exception as e:
             logger.error("Failed to delete documents from ChromaDB", error=str(e))
-            raise VectorDBError(f"Failed to delete documents: {e}")
+            raise VectorDBError(f"Failed to delete documents: {e}") from e
 
     async def get_collection_info(self) -> dict[str, Any]:
         self._ensure_connected()
@@ -106,7 +110,7 @@ class ChromaService:
             return {"name": settings.chroma_collection, "count": count}
         except Exception as e:
             logger.error("Failed to get collection info", error=str(e))
-            raise VectorDBError(f"Failed to get collection info: {e}")
+            raise VectorDBError(f"Failed to get collection info: {e}") from e
 
 
 chroma_service = ChromaService()

@@ -25,7 +25,8 @@ async def health_check():
     except Exception as e:
         services["ollama"] = {"status": "unhealthy", "error": str(e)}
 
-    overall_status = "healthy" if all(s.get("status") == "healthy" for s in services.values()) else "degraded"
+    all_healthy = all(s.get("status") == "healthy" for s in services.values())
+    overall_status = "healthy" if all_healthy else "degraded"
 
     return HealthResponse(
         status=overall_status,

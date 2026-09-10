@@ -27,15 +27,14 @@ class QueryService:
             if include_citations
             else ""
         )
-        return f"""You are a helpful research assistant. Use the following context to answer the question.
-If the context doesn't contain enough information, say so honestly.
-
-Context:
-{context}
-
-Question: {question}{citation_instruction}
-
-Answer:"""
+        return (
+            "You are a helpful research assistant. Use the following context to answer "
+            "the question.\n"
+            "If the context doesn't contain enough information, say so honestly.\n\n"
+            f"Context:\n{context}\n\n"
+            f"Question: {question}{citation_instruction}\n\n"
+            "Answer:"
+        )
 
     def _build_summary_prompt(self, text: str, max_length: int) -> str:
         return f"""Summarize the following text in approximately {max_length} characters or less.
@@ -51,16 +50,15 @@ Summary:"""
             f"Step {s.step}: {s.action} - {s.query}\nResult: {s.result[:500]}"
             for s in previous_steps
         ])
-        return f"""You are conducting multi-step research on the topic: "{topic}"
-
-Previous research steps:
-{steps_summary}
-
-Based on the above, determine the next research step. Respond with:
-1. A specific question or action to investigate next
-2. Why this step is needed
-
-If you have enough information to provide a final answer, respond with "FINAL ANSWER" followed by your comprehensive answer."""
+        return (
+            f'You are conducting multi-step research on the topic: "{topic}"\n\n'
+            f"Previous research steps:\n{steps_summary}\n\n"
+            "Based on the above, determine the next research step. Respond with:\n"
+            "1. A specific question or action to investigate next\n"
+            "2. Why this step is needed\n\n"
+            'If you have enough information to provide a final answer, respond with "FINAL ANSWER" '
+            "followed by your comprehensive answer."
+        )
 
     async def query(self, request: QueryRequest) -> QueryResponse:
         start_time = time.time()
@@ -84,7 +82,9 @@ If you have enough information to provide a final answer, respond with "FINAL AN
 
             context_parts = []
             citations = []
-            for i, (doc, meta, dist) in enumerate(zip(documents, metadatas, distances)):
+            for i, (doc, meta, dist) in enumerate(
+                zip(documents, metadatas, distances, strict=False)
+            ):
                 doc_id = meta.get("document_id", "unknown")
                 chunk_idx = meta.get("chunk_index", i)
                 context_parts.append(f"[Source {i+1}: {doc_id}:{chunk_idx}]\n{doc}")
@@ -172,7 +172,9 @@ If you have enough information to provide a final answer, respond with "FINAL AN
 
                 step_citations = []
                 context_parts = []
-                for i, (doc, meta, dist) in enumerate(zip(documents, metadatas, distances)):
+                for i, (doc, meta, dist) in enumerate(
+                    zip(documents, metadatas, distances, strict=False)
+                ):
                     doc_id = meta.get("document_id", "unknown")
                     chunk_idx = meta.get("chunk_index", i)
                     context_parts.append(f"[Source {i+1}: {doc_id}:{chunk_idx}]\n{doc}")
@@ -185,7 +187,11 @@ If you have enough information to provide a final answer, respond with "FINAL AN
                     step_citations.append(citation)
                     all_citations.append(citation)
 
-                context = "\n\n".join(context_parts) if context_parts else "No relevant sources found."
+                context = (
+                    "\n\n".join(context_parts)
+                    if context_parts
+                    else "No relevant sources found."
+                )
                 result = f"Found {len(documents)} relevant sources.\n{context}"
 
                 steps.append(ResearchStep(
@@ -197,12 +203,15 @@ If you have enough information to provide a final answer, respond with "FINAL AN
                 ))
 
             else:
-                final_prompt = f"""Based on all the research steps above, provide a comprehensive final answer for the topic: "{request.topic}"
-
-Research steps:
-{chr(10).join([f"Step {s.step}: {s.query} -> {s.result[:300]}" for s in steps])}
-
-Final Answer:"""
+                steps_summary = "\n".join(
+                    [f"Step {s.step}: {s.query} -> {s.result[:300]}" for s in steps]
+                )
+                final_prompt = (
+                    f'Based on all the research steps above, provide a comprehensive final answer '
+                    f'for the topic: "{request.topic}"\n\n'
+                    f"Research steps:\n{steps_summary}\n\n"
+                    "Final Answer:"
+                )
                 final_answer = await ollama_service.generate(prompt=final_prompt, temperature=0.3)
 
             total_time = int((time.time() - start_time) * 1000)

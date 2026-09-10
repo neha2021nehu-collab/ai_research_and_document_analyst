@@ -23,7 +23,7 @@ class OllamaService:
             logger.info("Connected to Ollama", host=settings.ollama_host, port=settings.ollama_port)
         except Exception as e:
             logger.error("Failed to connect to Ollama", error=str(e))
-            raise LLMError(f"Failed to connect to Ollama: {e}")
+            raise LLMError(f"Failed to connect to Ollama: {e}") from e
 
     async def disconnect(self) -> None:
         self._client = None
@@ -55,7 +55,7 @@ class OllamaService:
             return response["response"]
         except Exception as e:
             logger.error("Failed to generate response from Ollama", error=str(e))
-            raise LLMError(f"Failed to generate response: {e}")
+            raise LLMError(f"Failed to generate response: {e}") from e
 
     async def generate_stream(
         self,
@@ -83,7 +83,7 @@ class OllamaService:
                     yield chunk["response"]
         except Exception as e:
             logger.error("Failed to stream response from Ollama", error=str(e))
-            raise LLMError(f"Failed to stream response: {e}")
+            raise LLMError(f"Failed to stream response: {e}") from e
 
     async def embed(
         self,
@@ -97,7 +97,7 @@ class OllamaService:
             return response["embeddings"]
         except Exception as e:
             logger.error("Failed to generate embeddings from Ollama", error=str(e))
-            raise LLMError(f"Failed to generate embeddings: {e}")
+            raise LLMError(f"Failed to generate embeddings: {e}") from e
 
     async def list_models(self) -> list[dict[str, Any]]:
         self._ensure_connected()
@@ -106,7 +106,7 @@ class OllamaService:
             return response.get("models", [])
         except Exception as e:
             logger.error("Failed to list Ollama models", error=str(e))
-            raise LLMError(f"Failed to list models: {e}")
+            raise LLMError(f"Failed to list models: {e}") from e
 
     async def pull_model(self, model: str) -> dict[str, Any]:
         self._ensure_connected()
@@ -114,7 +114,7 @@ class OllamaService:
             return await self._client.pull(model=model)
         except Exception as e:
             logger.error("Failed to pull Ollama model", model=model, error=str(e))
-            raise LLMError(f"Failed to pull model {model}: {e}")
+            raise LLMError(f"Failed to pull model {model}: {e}") from e
 
 
 ollama_service = OllamaService()

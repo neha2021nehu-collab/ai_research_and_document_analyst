@@ -1,11 +1,10 @@
 from datetime import datetime
-from enum import Enum
-from typing import List, Optional
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
 
 
-class DocumentStatus(str, Enum):
+class DocumentStatus(StrEnum):
     PENDING = "pending"
     PROCESSING = "processing"
     COMPLETED = "completed"

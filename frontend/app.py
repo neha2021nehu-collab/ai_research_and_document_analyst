@@ -78,7 +78,9 @@ def upload_document(file) -> dict[str, Any]:
         return {"error": str(e)}
 
 
-def query_documents(question: str, top_k: int = 5, include_citations: bool = True) -> dict[str, Any]:
+def query_documents(
+    question: str, top_k: int = 5, include_citations: bool = True
+) -> dict[str, Any]:
     try:
         response = requests.post(
             f"{API_BASE_URL}/query",
@@ -102,11 +104,17 @@ def summarize_documents(document_ids: list[str], max_length: int = 500) -> dict[
         return {"error": str(e)}
 
 
-def research_topic(topic: str, max_steps: int = 5, max_sources_per_step: int = 3) -> dict[str, Any]:
+def research_topic(
+    topic: str, max_steps: int = 5, max_sources_per_step: int = 3
+) -> dict[str, Any]:
     try:
         response = requests.post(
             f"{API_BASE_URL}/research",
-            json={"topic": topic, "max_steps": max_steps, "max_sources_per_step": max_sources_per_step},
+            json={
+                "topic": topic,
+                "max_steps": max_steps,
+                "max_sources_per_step": max_sources_per_step,
+            },
             timeout=180,
         )
         return response.json()
@@ -132,7 +140,13 @@ def delete_document(document_id: str) -> dict[str, Any]:
 
 def main():
     st.markdown('<div class="main-header">🔬 AI Research Assistant</div>', unsafe_allow_html=True)
-    st.markdown('<div class="sub-header">Document Ingestion, RAG Q&A, Summarization & Agentic Research</div>', unsafe_allow_html=True)
+    st.markdown(
+        (
+            '<div class="sub-header">Document Ingestion, RAG Q&A, '
+            'Summarization & Agentic Research</div>'
+        ),
+        unsafe_allow_html=True,
+    )
 
     with st.sidebar:
         st.header("⚙️ System Status")
@@ -194,11 +208,12 @@ def main():
                 st.markdown(message["content"])
                 if message.get("citations"):
                     for citation in message["citations"]:
-                        st.markdown(
-                            f'<div class="citation">📄 {citation["document_id"]}:{citation["chunk_index"]} '
-                            f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>',
-                            unsafe_allow_html=True,
+                        citation_html = (
+                            f'<div class="citation">📄 {citation["document_id"]}:'
+                            f'{citation["chunk_index"]} '
+                            f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>'
                         )
+                        st.markdown(citation_html, unsafe_allow_html=True)
 
         if prompt := st.chat_input("Ask a question about your documents..."):
             st.session_state.messages.append({"role": "user", "content": prompt})
@@ -207,20 +222,25 @@ def main():
 
             with st.chat_message("assistant"):
                 with st.spinner("Thinking..."):
-                    result = query_documents(prompt, top_k=top_k, include_citations=include_citations)
+                    result = query_documents(
+                        prompt, top_k=top_k, include_citations=include_citations
+                    )
 
                 if "error" in result:
                     st.error(f"Error: {result['error']}")
-                    st.session_state.messages.append({"role": "assistant", "content": f"Error: {result['error']}"})
+                    st.session_state.messages.append(
+                        {"role": "assistant", "content": f"Error: {result['error']}"}
+                    )
                 else:
                     st.markdown(result["answer"])
                     if result.get("citations"):
                         for citation in result["citations"]:
-                            st.markdown(
-                                f'<div class="citation">📄 {citation["document_id"]}:{citation["chunk_index"]} '
-                                f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>',
-                                unsafe_allow_html=True,
+                            citation_html = (
+                                f'<div class="citation">📄 {citation["document_id"]}:'
+                                f'{citation["chunk_index"]} '
+                                f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>'
                             )
+                            st.markdown(citation_html, unsafe_allow_html=True)
 
                     st.session_state.messages.append({
                         "role": "assistant",
@@ -251,13 +271,21 @@ def main():
                 else:
                     st.markdown("### Summary")
                     st.write(result["summary"])
-                    st.caption(f"Model: {result['model_used']} | Documents: {len(result['document_ids'])}")
+                    st.caption(
+                        f"Model: {result['model_used']} | Documents: {len(result['document_ids'])}"
+                    )
 
     with tab4:
         st.subheader("Agentic Deep Research")
-        st.write("The agent will perform multi-step research on your topic, iteratively querying documents and synthesizing findings.")
+        st.write(
+            "The agent will perform multi-step research on your topic, "
+            "iteratively querying documents and synthesizing findings."
+        )
 
-        topic = st.text_input("Research Topic", placeholder="e.g., Impact of transformer architectures on NLP")
+        topic = st.text_input(
+            "Research Topic",
+            placeholder="e.g., Impact of transformer architectures on NLP",
+        )
         col1, col2 = st.columns(2)
         with col1:
             max_steps = st.slider("Max Steps", 1, 10, max_steps)
@@ -285,24 +313,29 @@ def main():
                             if step.get("citations"):
                                 st.write("**Sources:**")
                                 for citation in step["citations"]:
-                                    st.markdown(
-                                        f'<div class="citation">📄 {citation["document_id"]}:{citation["chunk_index"]} '
-                                        f'(score: {citation["score"]:.3f})</div>',
-                                        unsafe_allow_html=True,
+                                    citation_html = (
+                                        f'<div class="citation">📄 {citation["document_id"]}:'
+                                        f'{citation["chunk_index"]} '
+                                        f'(score: {citation["score"]:.3f})</div>'
                                     )
+                                    st.markdown(citation_html, unsafe_allow_html=True)
 
                     if result.get("all_citations"):
                         st.markdown("### All Citations")
                         for citation in result["all_citations"]:
-                            st.markdown(
-                                f'<div class="citation">📄 {citation["document_id"]}:{citation["chunk_index"]} '
-                                f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>',
-                                unsafe_allow_html=True,
+                            citation_html = (
+                                f'<div class="citation">📄 {citation["document_id"]}:'
+                                f'{citation["chunk_index"]} '
+                                f'(score: {citation["score"]:.3f})'
+                                f'<br>{citation["content"]}</div>'
                             )
+                            st.markdown(citation_html, unsafe_allow_html=True)
 
     with tab5:
         st.subheader("Document Library")
-        st.info("Document listing functionality coming soon. Use the API directly to manage documents.")
+        st.info(
+            "Document listing functionality coming soon. Use the API directly to manage documents."
+        )
 
 
 if __name__ == "__main__":

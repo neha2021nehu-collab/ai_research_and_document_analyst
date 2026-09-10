@@ -32,7 +32,7 @@ class DocumentService:
         ext = Path(file_path).suffix.lower()
         try:
             if ext == ".txt" or ext == ".md":
-                with open(file_path, encoding="utf-8") as f:
+                with Path(file_path).open(encoding="utf-8") as f:
                     return f.read()
             elif ext == ".pdf":
                 return self._extract_pdf(file_path)
@@ -42,31 +42,33 @@ class DocumentService:
                 raise ValidationError(f"Unsupported file type: {ext}")
         except Exception as e:
             logger.error("Failed to extract text", file=file_path, error=str(e))
-            raise DocumentProcessingError(f"Failed to extract text: {e}")
+            raise DocumentProcessingError(f"Failed to extract text: {e}") from e
 
     def _extract_pdf(self, file_path: str) -> str:
         try:
             import pypdf
             text = ""
-            with open(file_path, "rb") as f:
+            with Path(file_path).open("rb") as f:
                 reader = pypdf.PdfReader(f)
                 for page in reader.pages:
                     text += page.extract_text() + "\n"
             return text
-        except ImportError:
-            raise DocumentProcessingError("pypdf not installed. Cannot process PDF files.")
+        except ImportError as e:
+            raise DocumentProcessingError("pypdf not installed. Cannot process PDF files.") from e
         except Exception as e:
-            raise DocumentProcessingError(f"PDF extraction failed: {e}")
+            raise DocumentProcessingError(f"PDF extraction failed: {e}") from e
 
     def _extract_docx(self, file_path: str) -> str:
         try:
             import docx
             doc = docx.Document(file_path)
             return "\n".join([para.text for para in doc.paragraphs])
-        except ImportError:
-            raise DocumentProcessingError("python-docx not installed. Cannot process DOCX files.")
+        except ImportError as e:
+            raise DocumentProcessingError(
+                "python-docx not installed. Cannot process DOCX files."
+            ) from e
         except Exception as e:
-            raise DocumentProcessingError(f"DOCX extraction failed: {e}")
+            raise DocumentProcessingError(f"DOCX extraction failed: {e}") from e
 
     def _chunk_text(self, text: str) -> list[str]:
         chunks = []
@@ -140,7 +142,7 @@ class DocumentService:
             logger.info("Document deleted", document_id=document_id)
         except Exception as e:
             logger.error("Failed to delete document", document_id=document_id, error=str(e))
-            raise DocumentProcessingError(f"Failed to delete document: {e}")
+            raise DocumentProcessingError(f"Failed to delete document: {e}") from e
 
 
 document_service = DocumentService()

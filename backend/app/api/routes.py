@@ -1,4 +1,3 @@
-import os
 import uuid
 from datetime import datetime
 from pathlib import Path
@@ -57,7 +56,7 @@ async def upload_document(
             size=size,
         )
 
-        os.remove(file_path)
+        file_path.unlink()
 
         return DocumentResponse(
             id=result["id"],
@@ -70,12 +69,12 @@ async def upload_document(
             updated_at=datetime.utcnow(),
         )
     except ValidationError as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except DocumentProcessingError as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except Exception as e:
         logger.error("Upload failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.get("/documents/{document_id}", response_model=DocumentResponse)
@@ -102,10 +101,10 @@ async def get_document(document_id: str):
             updated_at=datetime.utcnow(),
         )
     except DocumentNotFoundError as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except Exception as e:
         logger.error("Get document failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.delete("/documents/{document_id}")
@@ -114,10 +113,10 @@ async def delete_document(document_id: str):
         await document_service.delete_document(document_id)
         return {"message": "Document deleted successfully"}
     except DocumentProcessingError as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except Exception as e:
         logger.error("Delete document failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/query", response_model=QueryResponse)
@@ -125,10 +124,10 @@ async def query(request: QueryRequest):
     try:
         return await query_service.query(request)
     except (VectorDBError, LLMError) as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except Exception as e:
         logger.error("Query failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/summarize", response_model=SummaryResponse)
@@ -141,10 +140,10 @@ async def summarize(request: SummaryRequest):
             model_used=settings.ollama_model,
         )
     except (VectorDBError, LLMError) as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except Exception as e:
         logger.error("Summarize failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
 
 
 @router.post("/research", response_model=ResearchResponse)
@@ -152,7 +151,7 @@ async def research(request: ResearchRequest):
     try:
         return await query_service.research(request)
     except (VectorDBError, LLMError) as e:
-        raise HTTPException(status_code=e.status_code, detail=e.message)
+        raise HTTPException(status_code=e.status_code, detail=e.message) from e
     except Exception as e:
         logger.error("Research failed", error=str(e))
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(status_code=500, detail="Internal server error") from e
