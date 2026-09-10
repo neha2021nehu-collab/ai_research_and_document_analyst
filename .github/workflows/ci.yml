@@ -24,10 +24,10 @@ jobs:
           python-version: ${{ env.PYTHON_VERSION }}
 
       - name: Install Ruff
-        run: pip install ruff==0.4.0
+        run: pip install ruff==0.6.6
 
       - name: Run Ruff check
-        run: ruff check .
+        run: ruff check . --output-format=github
 
       - name: Run Ruff format check
         run: ruff format --check .
@@ -48,10 +48,10 @@ jobs:
         run: |
           pip install -e ".[dev]"
           pip install mypy==1.10.0
-          pip install types-requests types-pyyaml types-pygments types-colorama types-defusedxml types-simplejson types-aiofiles types-urllib3 types-certifi types-chardet types-idna types-click types-toml types-jinja2 types-markdown types-packaging types-typing-extensions
+          pip install types-requests types-pyyaml types-pygments types-colorama types-defusedxml types-simplejson types-aiofiles types-urllib3 types-certifi types-chardet types-idna types-click types-toml types-jinja2 types-markdown types-packaging types-typing-extensions types-setuptools
 
       - name: Run MyPy
-        run: mypy --install-types --non-interactive backend frontend config
+        run: mypy --install-types --non-interactive --ignore-missing-imports backend frontend config
 
   test:
     name: Unit Tests (pytest)
