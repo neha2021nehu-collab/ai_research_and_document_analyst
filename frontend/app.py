@@ -13,7 +13,8 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-st.markdown("""
+st.markdown(
+    """
 <style>
     .main-header {
         font-size: 2.5rem;
@@ -58,7 +59,9 @@ st.markdown("""
         border: 1px solid #e9ecef;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
 
 
 def check_api_health() -> dict[str, Any]:
@@ -104,9 +107,7 @@ def summarize_documents(document_ids: list[str], max_length: int = 500) -> dict[
         return {"error": str(e)}
 
 
-def research_topic(
-    topic: str, max_steps: int = 5, max_sources_per_step: int = 3
-) -> dict[str, Any]:
+def research_topic(topic: str, max_steps: int = 5, max_sources_per_step: int = 3) -> dict[str, Any]:
     try:
         response = requests.post(
             f"{API_BASE_URL}/research",
@@ -143,7 +144,7 @@ def main():
     st.markdown(
         (
             '<div class="sub-header">Document Ingestion, RAG Q&A, '
-            'Summarization & Agentic Research</div>'
+            "Summarization & Agentic Research</div>"
         ),
         unsafe_allow_html=True,
     )
@@ -169,13 +170,15 @@ def main():
         max_steps = st.slider("Max Research Steps", 1, 10, 5)
         max_sources = st.slider("Sources per Step", 1, 5, 3)
 
-    tab1, tab2, tab3, tab4, tab5 = st.tabs([
-        "📤 Upload Documents",
-        "💬 Chat / Query",
-        "📝 Summarize",
-        "🔬 Deep Research",
-        "📚 Document Library",
-    ])
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        [
+            "📤 Upload Documents",
+            "💬 Chat / Query",
+            "📝 Summarize",
+            "🔬 Deep Research",
+            "📚 Document Library",
+        ]
+    )
 
     with tab1:
         st.subheader("Upload Documents")
@@ -210,8 +213,8 @@ def main():
                     for citation in message["citations"]:
                         citation_html = (
                             f'<div class="citation">📄 {citation["document_id"]}:'
-                            f'{citation["chunk_index"]} '
-                            f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>'
+                            f"{citation['chunk_index']} "
+                            f"(score: {citation['score']:.3f})<br>{citation['content']}</div>"
                         )
                         st.markdown(citation_html, unsafe_allow_html=True)
 
@@ -237,25 +240,31 @@ def main():
                         for citation in result["citations"]:
                             citation_html = (
                                 f'<div class="citation">📄 {citation["document_id"]}:'
-                                f'{citation["chunk_index"]} '
-                                f'(score: {citation["score"]:.3f})<br>{citation["content"]}</div>'
+                                f"{citation['chunk_index']} "
+                                f"(score: {citation['score']:.3f})<br>{citation['content']}</div>"
                             )
                             st.markdown(citation_html, unsafe_allow_html=True)
 
-                    st.session_state.messages.append({
-                        "role": "assistant",
-                        "content": result["answer"],
-                        "citations": result.get("citations", []),
-                    })
+                    st.session_state.messages.append(
+                        {
+                            "role": "assistant",
+                            "content": result["answer"],
+                            "citations": result.get("citations", []),
+                        }
+                    )
 
     with tab3:
         st.subheader("Summarize Documents")
 
-        document_ids = st.text_area(
-            "Document IDs (one per line)",
-            placeholder="doc-id-1\ndoc-id-2\n...",
-            help="Enter document IDs to summarize, one per line",
-        ).strip().split("\n")
+        document_ids = (
+            st.text_area(
+                "Document IDs (one per line)",
+                placeholder="doc-id-1\ndoc-id-2\n...",
+                help="Enter document IDs to summarize, one per line",
+            )
+            .strip()
+            .split("\n")
+        )
         document_ids = [d.strip() for d in document_ids if d.strip()]
 
         max_length = st.slider("Max Summary Length", 100, 2000, 500)
@@ -315,8 +324,8 @@ def main():
                                 for citation in step["citations"]:
                                     citation_html = (
                                         f'<div class="citation">📄 {citation["document_id"]}:'
-                                        f'{citation["chunk_index"]} '
-                                        f'(score: {citation["score"]:.3f})</div>'
+                                        f"{citation['chunk_index']} "
+                                        f"(score: {citation['score']:.3f})</div>"
                                     )
                                     st.markdown(citation_html, unsafe_allow_html=True)
 
@@ -325,9 +334,9 @@ def main():
                         for citation in result["all_citations"]:
                             citation_html = (
                                 f'<div class="citation">📄 {citation["document_id"]}:'
-                                f'{citation["chunk_index"]} '
-                                f'(score: {citation["score"]:.3f})'
-                                f'<br>{citation["content"]}</div>'
+                                f"{citation['chunk_index']} "
+                                f"(score: {citation['score']:.3f})"
+                                f"<br>{citation['content']}</div>"
                             )
                             st.markdown(citation_html, unsafe_allow_html=True)
 

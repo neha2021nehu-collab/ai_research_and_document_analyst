@@ -27,12 +27,14 @@ class TestSettings:
 class TestModels:
     def test_document_status_enum(self):
         from backend.app.models import DocumentStatus
+
         assert DocumentStatus.PENDING == "pending"
         assert DocumentStatus.COMPLETED == "completed"
         assert DocumentStatus.FAILED == "failed"
 
     def test_query_request_validation(self):
         from backend.app.models import QueryRequest
+
         req = QueryRequest(question="Test question", top_k=3)
         assert req.question == "Test question"
         assert req.top_k == 3
@@ -53,6 +55,7 @@ class TestModels:
 class TestExceptions:
     def test_app_exception(self):
         from backend.app.core.exceptions import AppException
+
         exc = AppException("Test error", status_code=400, detail={"key": "value"})
         assert exc.message == "Test error"
         assert exc.status_code == 400
@@ -60,6 +63,7 @@ class TestExceptions:
 
     def test_document_not_found_error(self):
         from backend.app.core.exceptions import DocumentNotFoundError
+
         exc = DocumentNotFoundError("doc-123")
         assert exc.status_code == 404
         assert "doc-123" in exc.message
@@ -67,6 +71,7 @@ class TestExceptions:
 
     def test_validation_error(self):
         from backend.app.core.exceptions import ValidationError
+
         exc = ValidationError("Invalid input", detail={"field": "email"})
         assert exc.status_code == 400
         assert exc.detail == {"field": "email"}
@@ -76,6 +81,7 @@ class TestServices:
     @pytest.mark.asyncio
     async def test_chroma_service_connection(self):
         from backend.app.services.chroma_service import ChromaService
+
         service = ChromaService()
         assert service._client is None
         assert service._collection is None
@@ -83,6 +89,7 @@ class TestServices:
     @pytest.mark.asyncio
     async def test_ollama_service_connection(self):
         from backend.app.services.ollama_service import OllamaService
+
         service = OllamaService()
         assert service._client is None
 

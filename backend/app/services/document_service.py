@@ -47,6 +47,7 @@ class DocumentService:
     def _extract_pdf(self, file_path: str) -> str:
         try:
             import pypdf
+
             text = ""
             with Path(file_path).open("rb") as f:
                 reader = pypdf.PdfReader(f)
@@ -61,6 +62,7 @@ class DocumentService:
     def _extract_docx(self, file_path: str) -> str:
         try:
             import docx
+
             doc = docx.Document(file_path)
             return "\n".join([para.text for para in doc.paragraphs])
         except ImportError as e:

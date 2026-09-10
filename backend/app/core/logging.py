@@ -1,4 +1,3 @@
-
 import structlog
 
 from config.settings import settings

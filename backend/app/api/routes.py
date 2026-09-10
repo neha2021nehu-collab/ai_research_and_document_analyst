@@ -81,6 +81,7 @@ async def upload_document(
 async def get_document(document_id: str):
     try:
         from backend.app.services.chroma_service import chroma_service
+
         results = await chroma_service.query(
             query_texts=[""],
             n_results=1,

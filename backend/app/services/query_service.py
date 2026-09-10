@@ -46,10 +46,12 @@ Text:
 Summary:"""
 
     def _build_research_prompt(self, topic: str, previous_steps: list[ResearchStep]) -> str:
-        steps_summary = "\n".join([
-            f"Step {s.step}: {s.action} - {s.query}\nResult: {s.result[:500]}"
-            for s in previous_steps
-        ])
+        steps_summary = "\n".join(
+            [
+                f"Step {s.step}: {s.action} - {s.query}\nResult: {s.result[:500]}"
+                for s in previous_steps
+            ]
+        )
         return (
             f'You are conducting multi-step research on the topic: "{topic}"\n\n'
             f"Previous research steps:\n{steps_summary}\n\n"
@@ -87,13 +89,15 @@ Summary:"""
             ):
                 doc_id = meta.get("document_id", "unknown")
                 chunk_idx = meta.get("chunk_index", i)
-                context_parts.append(f"[Source {i+1}: {doc_id}:{chunk_idx}]\n{doc}")
-                citations.append(Citation(
-                    document_id=doc_id,
-                    chunk_index=chunk_idx,
-                    content=doc[:200] + "..." if len(doc) > 200 else doc,
-                    score=1.0 - dist if dist else 0.0,
-                ))
+                context_parts.append(f"[Source {i + 1}: {doc_id}:{chunk_idx}]\n{doc}")
+                citations.append(
+                    Citation(
+                        document_id=doc_id,
+                        chunk_index=chunk_idx,
+                        content=doc[:200] + "..." if len(doc) > 200 else doc,
+                        score=1.0 - dist if dist else 0.0,
+                    )
+                )
 
             context = "\n\n".join(context_parts)
             prompt = self._build_rag_prompt(request.question, context, request.include_citations)
@@ -177,7 +181,7 @@ Summary:"""
                 ):
                     doc_id = meta.get("document_id", "unknown")
                     chunk_idx = meta.get("chunk_index", i)
-                    context_parts.append(f"[Source {i+1}: {doc_id}:{chunk_idx}]\n{doc}")
+                    context_parts.append(f"[Source {i + 1}: {doc_id}:{chunk_idx}]\n{doc}")
                     citation = Citation(
                         document_id=doc_id,
                         chunk_index=chunk_idx,
@@ -188,26 +192,26 @@ Summary:"""
                     all_citations.append(citation)
 
                 context = (
-                    "\n\n".join(context_parts)
-                    if context_parts
-                    else "No relevant sources found."
+                    "\n\n".join(context_parts) if context_parts else "No relevant sources found."
                 )
                 result = f"Found {len(documents)} relevant sources.\n{context}"
 
-                steps.append(ResearchStep(
-                    step=step_num,
-                    action=action,
-                    query=query,
-                    result=result,
-                    citations=step_citations,
-                ))
+                steps.append(
+                    ResearchStep(
+                        step=step_num,
+                        action=action,
+                        query=query,
+                        result=result,
+                        citations=step_citations,
+                    )
+                )
 
             else:
                 steps_summary = "\n".join(
                     [f"Step {s.step}: {s.query} -> {s.result[:300]}" for s in steps]
                 )
                 final_prompt = (
-                    f'Based on all the research steps above, provide a comprehensive final answer '
+                    f"Based on all the research steps above, provide a comprehensive final answer "
                     f'for the topic: "{request.topic}"\n\n'
                     f"Research steps:\n{steps_summary}\n\n"
                     "Final Answer:"
