@@ -52,10 +52,12 @@ jobs:
         run: |
           pip install -e ".[dev]"
           pip install mypy==1.10.0
-          pip install types-requests types-pyyaml types-pygments types-colorama types-defusedxml types-simplejson types-aiofiles types-urllib3 types-certifi types-chardet types-idna types-click types-toml types-jinja2 types-markdown types-packaging types-typing-extensions types-setuptools
+          
 
       - name: Run MyPy
         run: mypy --install-types --non-interactive --ignore-missing-imports backend frontend config
+      
+
 
   test:
     name: Unit Tests (pytest)
@@ -127,7 +129,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: AquaSecurity/trivy-action@0.24.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
