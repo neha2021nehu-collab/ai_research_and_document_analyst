@@ -13,7 +13,7 @@ logger = structlog.get_logger(__name__)
 
 
 class DocumentService:
-    def __init__(self):
+    def __init__(self) -> None:
         self._chunk_size = settings.chunk_size
         self._chunk_overlap = settings.chunk_overlap
 

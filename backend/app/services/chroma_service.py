@@ -11,9 +11,9 @@ logger = structlog.get_logger(__name__)
 
 
 class ChromaService:
-    def __init__(self):
-        self._client: chromadb.HttpClient | None = None
-        self._collection = None
+    def __init__(self) -> None:
+        self._client: chromadb.ClientAPI | None = None
+        self._collection: chromadb.Collection | None = None
 
     async def connect(self) -> None:
         try:
@@ -39,9 +39,10 @@ class ChromaService:
         self._client = None
         self._collection = None
 
-    def _ensure_connected(self) -> None:
+    def _ensure_connected(self) -> Any:
         if self._collection is None:
             raise VectorDBError("ChromaDB not connected. Call connect() first.")
+        return self._collection
 
     async def add_documents(
         self,
@@ -50,17 +51,17 @@ class ChromaService:
         ids: list[str],
         embeddings: list[list[float]] | None = None,
     ) -> None:
-        self._ensure_connected()
+        collection = self._ensure_connected()
         try:
             if embeddings:
-                self._collection.add(
+                collection.add(
                     documents=documents,
                     metadatas=metadatas,
                     ids=ids,
                     embeddings=embeddings,
                 )
             else:
-                self._collection.add(
+                collection.add(
                     documents=documents,
                     metadatas=metadatas,
                     ids=ids,
@@ -77,36 +78,36 @@ class ChromaService:
         where: dict[str, Any] | None = None,
         include_embeddings: bool = False,
     ) -> dict[str, Any]:
-        self._ensure_connected()
+        collection = self._ensure_connected()
         try:
             include = ["documents", "metadatas", "distances"]
             if include_embeddings:
                 include.append("embeddings")
 
-            results = self._collection.query(
+            results = collection.query(
                 query_texts=query_texts,
                 n_results=n_results,
                 where=where,
                 include=include,
             )
-            return results
+            return dict(results)
         except Exception as e:
             logger.error("Failed to query ChromaDB", error=str(e))
             raise VectorDBError(f"Failed to query: {e}") from e
 
     async def delete_documents(self, ids: list[str]) -> None:
-        self._ensure_connected()
+        collection = self._ensure_connected()
         try:
-            self._collection.delete(ids=ids)
+            collection.delete(ids=ids)
             logger.info("Documents deleted from ChromaDB", count=len(ids))
         except Exception as e:
             logger.error("Failed to delete documents from ChromaDB", error=str(e))
             raise VectorDBError(f"Failed to delete documents: {e}") from e
 
     async def get_collection_info(self) -> dict[str, Any]:
-        self._ensure_connected()
+        collection = self._ensure_connected()
         try:
-            count = self._collection.count()
+            count = collection.count()
             return {"name": settings.chroma_collection, "count": count}
         except Exception as e:
             logger.error("Failed to get collection info", error=str(e))

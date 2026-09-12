@@ -1,3 +1,4 @@
+from httpx import _client
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -11,7 +12,7 @@ logger = structlog.get_logger(__name__)
 
 
 class OllamaService:
-    def __init__(self):
+    def __init__(self) -> None:
         self._client: ollama.AsyncClient | None = None
 
     async def connect(self) -> None:
@@ -28,10 +29,17 @@ class OllamaService:
     async def disconnect(self) -> None:
         self._client = None
 
-    def _ensure_connected(self) -> None:
+    # def _ensure_connected(self) -> None:
+    #     if self._client is None:
+    #         raise LLMError("Ollama not connected. Call connect() first.")
+
+    def _ensure_connected(self) -> ollama.AsyncClient:
         if self._client is None:
             raise LLMError("Ollama not connected. Call connect() first.")
 
+        return self._client
+
+    
     async def generate(
         self,
         prompt: str,
@@ -40,22 +48,25 @@ class OllamaService:
         temperature: float = 0.7,
         max_tokens: int | None = None,
     ) -> str:
-        self._ensure_connected()
         try:
             model = model or settings.ollama_model
-            response = await self._client.generate(
+
+            client = self._ensure_connected()
+
+            response = await client.generate(
                 model=model,
                 prompt=prompt,
-                system=system,
+                system=system or "",
                 options={
                     "temperature": temperature,
                     "num_predict": max_tokens or -1,
                 },
             )
-            return response["response"]
+            return response.response or ""
         except Exception as e:
             logger.error("Failed to generate response from Ollama", error=str(e))
             raise LLMError(f"Failed to generate response: {e}") from e
+
 
     async def generate_stream(
         self,
@@ -68,10 +79,14 @@ class OllamaService:
         self._ensure_connected()
         try:
             model = model or settings.ollama_model
-            stream = await self._client.generate(
+
+            client = self._ensure_connected()
+
+            stream = await client.generate(
+            
                 model=model,
                 prompt=prompt,
-                system=system,
+                system=system or "",
                 options={
                     "temperature": temperature,
                     "num_predict": max_tokens or -1,
@@ -90,28 +105,36 @@ class OllamaService:
         texts: list[str],
         model: str | None = None,
     ) -> list[list[float]]:
-        self._ensure_connected()
+        client = self._ensure_connected()
+
         try:
             model = model or settings.ollama_embedding_model
-            response = await self._client.embed(model=model, input=texts)
-            return response["embeddings"]
+            
+            response = await client.embed(
+                model=model,
+                input=texts,
+            )
+            return [list(embedding) for embedding in response.embeddings]
         except Exception as e:
             logger.error("Failed to generate embeddings from Ollama", error=str(e))
             raise LLMError(f"Failed to generate embeddings: {e}") from e
 
     async def list_models(self) -> list[dict[str, Any]]:
-        self._ensure_connected()
+        client = self._ensure_connected()
+
         try:
-            response = await self._client.list()
-            return response.get("models", [])
+            response = await client.list()
+            return [model.model_dump() for model in response.models]
         except Exception as e:
             logger.error("Failed to list Ollama models", error=str(e))
             raise LLMError(f"Failed to list models: {e}") from e
 
     async def pull_model(self, model: str) -> dict[str, Any]:
-        self._ensure_connected()
+        client = self._ensure_connected()
+
         try:
-            return await self._client.pull(model=model)
+            response = await client.pull(model=model)
+            return response.model_dump()
         except Exception as e:
             logger.error("Failed to pull Ollama model", model=model, error=str(e))
             raise LLMError(f"Failed to pull model {model}: {e}") from e

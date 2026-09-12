@@ -7,12 +7,13 @@ from backend.app.api import api_router, health_router
 from backend.app.core.logging import get_logger, setup_logging
 from backend.app.services import chroma_service, ollama_service
 from config.settings import settings
+from collections.abc import AsyncIterator
 
 logger = get_logger(__name__)
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging()
     logger.info("Starting AI Research Assistant", version=settings.app_version)
 
@@ -50,8 +51,9 @@ app.include_router(health_router)
 app.include_router(api_router)
 
 
+
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {
         "name": settings.app_name,
         "version": settings.app_version,

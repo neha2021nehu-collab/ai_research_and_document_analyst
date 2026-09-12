@@ -18,7 +18,7 @@ logger = structlog.get_logger(__name__)
 
 
 class QueryService:
-    def __init__(self):
+    def __init__(self) -> None:
         self._top_k = settings.top_k
 
     def _build_rag_prompt(self, question: str, context: str, include_citations: bool = True) -> str:
@@ -67,7 +67,7 @@ Summary:"""
         try:
             results = await chroma_service.query(
                 query_texts=[request.question],
-                n_results=request.top_k,
+                n_results=request.top_k or self._top_k,
             )
 
             documents = results.get("documents", [[]])[0]
@@ -149,11 +149,12 @@ Summary:"""
 
     async def research(self, request: ResearchRequest) -> ResearchResponse:
         start_time = time.time()
-        steps = []
-        all_citations = []
+        steps: list[ResearchStep] = []
+        all_citations: list[Citation] = []
 
         try:
-            for step_num in range(1, request.max_steps + 1):
+            max_steps = request.max_steps or 5
+            for step_num in range(1, max_steps + 1):
                 previous_steps = steps[-3:] if steps else []
                 prompt = self._build_research_prompt(request.topic, previous_steps)
                 response = await ollama_service.generate(prompt=prompt, temperature=0.5)
@@ -167,7 +168,7 @@ Summary:"""
 
                 results = await chroma_service.query(
                     query_texts=[query],
-                    n_results=request.max_sources_per_step,
+                    n_results=request.max_sources_per_step or self._top_k,
                 )
 
                 documents = results.get("documents", [[]])[0]

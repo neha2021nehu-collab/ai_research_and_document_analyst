@@ -37,8 +37,10 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 async def upload_document(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
-):
+) -> DocumentResponse:
     try:
+        if not file.filename:
+            raise ValidationError("Uploaded file must have a filename")
         content = await file.read()
         size = len(content)
 
@@ -78,7 +80,7 @@ async def upload_document(
 
 
 @router.get("/documents/{document_id}", response_model=DocumentResponse)
-async def get_document(document_id: str):
+async def get_document(document_id: str) -> DocumentResponse:
     try:
         from backend.app.services.chroma_service import chroma_service
 
@@ -109,7 +111,7 @@ async def get_document(document_id: str):
 
 
 @router.delete("/documents/{document_id}")
-async def delete_document(document_id: str):
+async def delete_document(document_id: str) -> dict[str, str]:
     try:
         await document_service.delete_document(document_id)
         return {"message": "Document deleted successfully"}
@@ -121,7 +123,7 @@ async def delete_document(document_id: str):
 
 
 @router.post("/query", response_model=QueryResponse)
-async def query(request: QueryRequest):
+async def query(request: QueryRequest) -> QueryResponse:
     try:
         return await query_service.query(request)
     except (VectorDBError, LLMError) as e:
@@ -132,9 +134,9 @@ async def query(request: QueryRequest):
 
 
 @router.post("/summarize", response_model=SummaryResponse)
-async def summarize(request: SummaryRequest):
+async def summarize(request: SummaryRequest) -> SummaryResponse:
     try:
-        summary = await query_service.summarize(request.document_ids, request.max_length)
+        summary = await query_service.summarize(request.document_ids, max_length=request.max_length or 1000)
         return SummaryResponse(
             summary=summary,
             document_ids=request.document_ids,
@@ -148,7 +150,7 @@ async def summarize(request: SummaryRequest):
 
 
 @router.post("/research", response_model=ResearchResponse)
-async def research(request: ResearchRequest):
+async def research(request: ResearchRequest) -> ResearchResponse:
     try:
         return await query_service.research(request)
     except (VectorDBError, LLMError) as e:

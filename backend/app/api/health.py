@@ -1,5 +1,6 @@
 import structlog
 from fastapi import APIRouter
+from typing import Any
 
 from backend.app.models import HealthResponse
 from backend.app.services import chroma_service, ollama_service
@@ -10,8 +11,8 @@ router = APIRouter(prefix="/api/v1", tags=["health"])
 
 
 @router.get("/health", response_model=HealthResponse)
-async def health_check():
-    services = {}
+async def health_check() -> HealthResponse:
+    services: dict[str, dict[str, Any]] = {}
 
     try:
         info = await chroma_service.get_collection_info()
