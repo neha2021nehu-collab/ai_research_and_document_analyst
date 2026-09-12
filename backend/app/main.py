@@ -1,3 +1,4 @@
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -7,7 +8,6 @@ from backend.app.api import api_router, health_router
 from backend.app.core.logging import get_logger, setup_logging
 from backend.app.services import chroma_service, ollama_service
 from config.settings import settings
-from collections.abc import AsyncIterator
 
 logger = get_logger(__name__)
 

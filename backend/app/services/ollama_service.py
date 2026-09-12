@@ -1,4 +1,3 @@
-from httpx import _client
 from collections.abc import AsyncGenerator
 from typing import Any
 
@@ -39,7 +38,7 @@ class OllamaService:
 
         return self._client
 
-    
+
     async def generate(
         self,
         prompt: str,
@@ -83,7 +82,7 @@ class OllamaService:
             client = self._ensure_connected()
 
             stream = await client.generate(
-            
+
                 model=model,
                 prompt=prompt,
                 system=system or "",
@@ -109,7 +108,7 @@ class OllamaService:
 
         try:
             model = model or settings.ollama_embedding_model
-            
+
             response = await client.embed(
                 model=model,
                 input=texts,

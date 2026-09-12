@@ -2,7 +2,7 @@ import os
 from typing import Any
 
 import requests
-import streamlit as st 
+import streamlit as st
 from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")

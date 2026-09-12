@@ -1,6 +1,7 @@
+from typing import Any
+
 import structlog
 from fastapi import APIRouter
-from typing import Any
 
 from backend.app.models import HealthResponse
 from backend.app.services import chroma_service, ollama_service

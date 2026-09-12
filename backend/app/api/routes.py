@@ -136,7 +136,9 @@ async def query(request: QueryRequest) -> QueryResponse:
 @router.post("/summarize", response_model=SummaryResponse)
 async def summarize(request: SummaryRequest) -> SummaryResponse:
     try:
-        summary = await query_service.summarize(request.document_ids, max_length=request.max_length or 1000)
+        summary = await query_service.summarize(
+            request.document_ids,
+            max_length=request.max_length or 1000)
         return SummaryResponse(
             summary=summary,
             document_ids=request.document_ids,
