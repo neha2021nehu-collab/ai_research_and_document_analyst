@@ -38,7 +38,6 @@ class OllamaService:
 
         return self._client
 
-
     async def generate(
         self,
         prompt: str,
@@ -66,7 +65,6 @@ class OllamaService:
             logger.error("Failed to generate response from Ollama", error=str(e))
             raise LLMError(f"Failed to generate response: {e}") from e
 
-
     async def generate_stream(
         self,
         prompt: str,
@@ -82,7 +80,6 @@ class OllamaService:
             client = self._ensure_connected()
 
             stream = await client.generate(
-
                 model=model,
                 prompt=prompt,
                 system=system or "",

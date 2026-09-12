@@ -1,4 +1,3 @@
-
 from collections.abc import Callable
 from typing import Any, cast
 
@@ -35,4 +34,3 @@ def setup_logging() -> None:
 
 def get_logger(name: str) -> structlog.BoundLogger:
     return cast(structlog.BoundLogger, structlog.get_logger(name))
-

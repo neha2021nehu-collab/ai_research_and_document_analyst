@@ -137,8 +137,8 @@ async def query(request: QueryRequest) -> QueryResponse:
 async def summarize(request: SummaryRequest) -> SummaryResponse:
     try:
         summary = await query_service.summarize(
-            request.document_ids,
-            max_length=request.max_length or 1000)
+            request.document_ids, max_length=request.max_length or 1000
+        )
         return SummaryResponse(
             summary=summary,
             document_ids=request.document_ids,

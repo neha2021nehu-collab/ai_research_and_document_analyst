@@ -51,7 +51,6 @@ app.include_router(health_router)
 app.include_router(api_router)
 
 
-
 @app.get("/")
 async def root() -> dict[str, str]:
     return {
