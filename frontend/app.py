@@ -2,7 +2,8 @@ import os
 from typing import Any
 
 import requests
-import streamlit as st
+import streamlit as st 
+from streamlit.runtime.uploaded_file_manager import UploadedFile
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api/v1")
 
@@ -67,16 +68,16 @@ st.markdown(
 def check_api_health() -> dict[str, Any]:
     try:
         response = requests.get(f"{API_BASE_URL}/health", timeout=5)
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"status": "error", "error": str(e)}
 
 
-def upload_document(file) -> dict[str, Any]:
+def upload_document(file: UploadedFile) -> dict[str, Any]:
     try:
         files = {"file": (file.name, file.getvalue(), file.type)}
         response = requests.post(f"{API_BASE_URL}/documents/upload", files=files, timeout=60)
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"error": str(e)}
 
@@ -90,7 +91,7 @@ def query_documents(
             json={"question": question, "top_k": top_k, "include_citations": include_citations},
             timeout=60,
         )
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"error": str(e)}
 
@@ -102,7 +103,7 @@ def summarize_documents(document_ids: list[str], max_length: int = 500) -> dict[
             json={"document_ids": document_ids, "max_length": max_length},
             timeout=60,
         )
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"error": str(e)}
 
@@ -118,7 +119,7 @@ def research_topic(topic: str, max_steps: int = 5, max_sources_per_step: int = 3
             },
             timeout=180,
         )
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"error": str(e)}
 
@@ -126,7 +127,7 @@ def research_topic(topic: str, max_steps: int = 5, max_sources_per_step: int = 3
 def get_document(document_id: str) -> dict[str, Any]:
     try:
         response = requests.get(f"{API_BASE_URL}/documents/{document_id}", timeout=10)
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"error": str(e)}
 
@@ -134,12 +135,12 @@ def get_document(document_id: str) -> dict[str, Any]:
 def delete_document(document_id: str) -> dict[str, Any]:
     try:
         response = requests.delete(f"{API_BASE_URL}/documents/{document_id}", timeout=10)
-        return response.json()
+        return dict(response.json())
     except Exception as e:
         return {"error": str(e)}
 
 
-def main():
+def main() -> None:
     st.markdown('<div class="main-header">🔬 AI Research Assistant</div>', unsafe_allow_html=True)
     st.markdown(
         (
